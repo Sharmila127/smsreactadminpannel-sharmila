@@ -1,5 +1,6 @@
 name: Deploy Admin Panel
 
+# Trigger the workflow on push to main branch
 on:
   push:
     branches:
@@ -10,8 +11,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout repo
-      - name: Checkout repo
+      # Step 1: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       # Step 2: Setup Node.js
@@ -20,13 +21,20 @@ jobs:
         with:
           node-version: '20'
 
-      # Step 3: Install dependencies & Build
-      - name: Install & Build
+      # Step 3: Install dependencies and build
+      - name: Install dependencies and build
         run: |
           npm install
           npm run build
 
-      # Step 4: Configure AWS Credentials
+      # Step 4: Install AWS CLI
+      - name: Install AWS CLI
+        run: |
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install
+
+      # Step 5: Configure AWS credentials
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -34,14 +42,18 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-south-1
 
-      # Step 5: Deploy build output to S3 (/admin path)
-      - name: Upload to S3
+      # Step 6: Deploy build output to S3 (/admin path)
+      - name: Upload build to S3
         run: |
-          aws s3 sync dist/ s3://sms-frontend-all1/admin --delete
+          echo "Deploying build to S3 bucket..."
+          aws s3 sync dist/ s3://sms-frontend-all/admin --delete
+          echo "Deployment to S3 completed."
 
-      # Step 6: Invalidate CloudFront cache
-      - name: Invalidate CloudFront
+      # Step 7: Invalidate CloudFront cache
+      - name: Invalidate CloudFront cache
         run: |
+          echo "Invalidating CloudFront distribution..."
           aws cloudfront create-invalidation \
             --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
             --paths "/admin/*"
+          echo "CloudFront invalidation requested."
