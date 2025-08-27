@@ -1,4 +1,4 @@
-name: Deploy Admin Panel
+name: Deploy All Frontend Panels
 
 on:
   push:
@@ -20,12 +20,39 @@ jobs:
         with:
           node-version: '20'
 
-      # 3️⃣ Install dependencies and build
-      - name: Install dependencies & Build
+      # 3️⃣ Install dependencies and build each panel
+      - name: Build Admin Panel
         run: |
-          cd smsreactadminpannel
-          npm ci
-          npm run build
+          if [ -d "smsreactadminpannel" ]; then
+            cd smsreactadminpannel
+            npm ci
+            npm run build
+          else
+            echo "Admin panel folder not found!"
+            exit 1
+          fi
+
+      - name: Build Partner Panel
+        run: |
+          if [ -d "smsreactpartnerpannel" ]; then
+            cd smsreactpartnerpannel
+            npm ci
+            npm run build
+          else
+            echo "Partner panel folder not found!"
+            exit 1
+          fi
+
+      - name: Build User Panel
+        run: |
+          if [ -d "sms-reactuserpannel" ]; then
+            cd sms-reactuserpannel
+            npm ci
+            npm run build
+          else
+            echo "User panel folder not found!"
+            exit 1
+          fi
 
       # 4️⃣ Configure AWS CLI
       - name: Configure AWS CLI
@@ -35,11 +62,20 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-south-1
 
-      # 5️⃣ Upload files to S3
-      - name: Upload to S3
+      # 5️⃣ Upload Admin Panel to S3
+      - name: Upload Admin Panel to S3
         run: |
           cd smsreactadminpannel/dist
-          # Use quotes to handle spaces/special characters
-          for file in $(find . -type f); do
-            aws s3 cp "$file" "s3://sms-frontend-all/admin/${file#./}" --acl public-read
-          done
+          aws s3 sync . s3://sms-frontend-all/admin --acl public-read --delete
+
+      # 6️⃣ Upload Partner Panel to S3
+      - name: Upload Partner Panel to S3
+        run: |
+          cd smsreactpartnerpannel/dist
+          aws s3 sync . s3://sms-frontend-all/partner --acl public-read --delete
+
+      # 7️⃣ Upload User Panel to S3
+      - name: Upload User Panel to S3
+        run: |
+          cd sms-reactuserpannel/dist
+          aws s3 sync . s3://sms-frontend-all/user --acl public-read --delete
