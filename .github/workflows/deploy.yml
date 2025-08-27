@@ -3,45 +3,29 @@ name: Deploy Admin Panel
 on:
   push:
     branches:
-      - main  # Trigger on push to main branch
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout code
-      - name: Checkout repository
+      # 1️⃣ Checkout the repo
+      - name: Checkout repo
         uses: actions/checkout@v3
 
-      # Step 2: Verify folder structure
-      - name: List files
-        run: ls -la
-
-      # Step 3: Setup Node.js
+      # 2️⃣ Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
 
-      # Step 4: Install dependencies and build
-      - name: Install & Build Admin Panel
+      # 3️⃣ Detect Admin Panel folder
+      - name: Detect admin folder
+        id: folder-check
         run: |
-          # Adjust folder name if your files are in a subfolder
-          cd smsreactadminpannel
-          npm install
-          npm run build
-
-      # Step 5: Configure AWS CLI
-      - name: Configure AWS CLI
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      # Step 6: Deploy to S3
-      - name: Deploy to S3
-        run: |
-          # Change path if your build folder is different
-          aws s3 cp dist/ s3://sms-frontend-all/admin --recursive --acl public-read
+          if [ -d "smsreactadminpannel" ]; then
+            echo "FOLDER=smsreactadminpannel" >> $GITHUB_ENV
+          else
+            echo "Admin panel folder not found, using root..."
+            ech
