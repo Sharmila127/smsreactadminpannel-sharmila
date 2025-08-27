@@ -3,7 +3,7 @@ name: Deploy Admin Panel
 on:
   push:
     branches:
-      - main   # main branchக்கு push ஆனதும் deploy ஆகும்
+      - main
 
 jobs:
   deploy:
@@ -29,13 +29,10 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-south-1   # உங்கள் bucket region
+          aws-region: ap-south-1
 
-      # Build output (dist/) → S3 bucketக்குள் /admin pathலே deploy ஆகும்
       - name: Deploy to S3 (Admin)
         run: aws s3 sync dist/ s3://sms-frontend-all1/admin --delete
 
       - name: Invalidate CloudFront cache
-        run: aws cloudfront create-invalidation \
-          --distribution-id E3B7CMHP2QQ05QFH \
-          --paths "/admin/*"
+        run: aws cloudfront create-invalidation --distribution-id E3B7CMHP2QQ05QFH --paths "/admin/*"
