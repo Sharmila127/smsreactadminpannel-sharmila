@@ -23,7 +23,6 @@ jobs:
       # Step 3: Install dependencies & Build
       - name: Install & Build
         run: |
-          cd smsreactadminpannel
           npm install
           npm run build
 
@@ -38,7 +37,7 @@ jobs:
       # Step 5: Deploy build output to S3 (/admin path)
       - name: Upload to S3
         run: |
-          aws s3 sync smsreactadminpannel/dist/ s3://sms-frontend-all1/admin --delete
+          aws s3 sync dist/ s3://sms-frontend-all1/admin --delete
 
       # Step 6: Invalidate CloudFront cache
       - name: Invalidate CloudFront
