@@ -31,7 +31,7 @@ jobs:
           fi
 
           cd $FOLDER
-          npm ci
+          npm install
           npm run build
 
       # 4. Deploy to S3
