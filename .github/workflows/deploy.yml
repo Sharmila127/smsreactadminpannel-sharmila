@@ -2,20 +2,19 @@ name: Deploy Admin Panel
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]   # Deploy only on main branch
 
 jobs:
-  deploy:
+  build-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout repository
-      - name: Checkout repo
-        uses: actions/checkout@v3
+      # 1. Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       # 2. Setup Node.js
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: '20'
@@ -23,7 +22,7 @@ jobs:
       # 3. Detect folder & install dependencies
       - name: Install dependencies
         run: |
-          # Check if folder exists
+          # Check if smsreactadminpannel folder exists
           if [ -d "smsreactadminpannel" ]; then
             cd smsreactadminpannel
           else
@@ -37,14 +36,26 @@ jobs:
             exit 1
           fi
 
-          npm install
+          npm ci
+
+      # 4. Build project
+      - name: Build project
+        run: |
+          cd smsreactadminpannel
           npm run build
 
-      # 4. Deploy to S3
+      # 5. Configure AWS credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # 6. Deploy to S3 (admin/)
       - name: Deploy to S3
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: 'ap-south-1'
-        run: |
-          aws s3 cp dist/ s3://sms-frontend-all1/admin --recursive --acl public-read
+        run: aws s3 sync ./smsreactadminpannel/dist s3://sms-frontend-all1/admin --delete --exact-timestamps --acl public-read
+
+      # 7. Invalidate CloudFront cache
+      - name: Invalidate CloudFront cache
+        run: aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/admin/*"
