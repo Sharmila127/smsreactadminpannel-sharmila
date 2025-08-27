@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout the repository
+      # 1. Checkout repository
       - name: Checkout repo
         uses: actions/checkout@v3
 
@@ -20,17 +20,23 @@ jobs:
         with:
           node-version: '20'
 
-      # 3. Install dependencies and build
-      - name: Install & Build
+      # 3. Detect folder & install dependencies
+      - name: Install dependencies
         run: |
-          # Detect folder: if smsreactadminpannel exists, use it, otherwise use root
+          # Check if folder exists
           if [ -d "smsreactadminpannel" ]; then
-            echo "FOLDER=smsreactadminpannel" >> $GITHUB_ENV
+            cd smsreactadminpannel
           else
-            echo "FOLDER=." >> $GITHUB_ENV
+            echo "Error: smsreactadminpannel folder not found!"
+            exit 1
           fi
 
-          cd $FOLDER
+          # Make sure package.json exists
+          if [ ! -f "package.json" ]; then
+            echo "Error: package.json not found in smsreactadminpannel!"
+            exit 1
+          fi
+
           npm install
           npm run build
 
