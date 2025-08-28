@@ -3,27 +3,27 @@ import react from '@vitejs/plugin-react-swc';
 
 // https://vite.dev/config/
 export default defineConfig({
-	plugins: [react({
+  plugins: [react({
     jsxImportSource: 'react'
   })],
-    base: './',
-    define: {
-      global: 'globalThis',
-      'process.env': {},
-      __DEV__: 'false',
-    },
-    optimizeDeps: {
-      include: ['react', 'react-dom', 'recharts'],
-      exclude: [],
-      force: true
-    },
-    resolve: {
-      alias: {
-        'react': 'react',
-        'react-dom': 'react-dom'
-      }
-    },
-	  build: {
+  base: '/admin/',   // 👈 முக்கியம்: CloudFront/S3-க்கு deploy பண்ணும்போது correct base path
+  define: {
+    global: 'globalThis',
+    'process.env': {},
+    __DEV__: 'false',
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'recharts'],
+    exclude: [],
+    force: true
+  },
+  resolve: {
+    alias: {
+      'react': 'react',
+      'react-dom': 'react-dom'
+    }
+  },
+  build: {
     outDir: 'dist',
     assetsDir: 'assets',
     commonjsOptions: {
