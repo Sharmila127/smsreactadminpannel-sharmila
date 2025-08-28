@@ -6,7 +6,8 @@ export default defineConfig({
   plugins: [react({
     jsxImportSource: 'react'
   })],
-  base: '/admin/',   // 👈 முக்கியம்: CloudFront/S3-க்கு deploy பண்ணும்போது correct base path
+  // ✅ Remove the base path so files are served from the root
+  // base: '/admin/',
   define: {
     global: 'globalThis',
     'process.env': {},
