@@ -1,0 +1,22 @@
+re static web site
+
+azure portal--  
+static web app -- create-- 
+subscription
+resource group - create new - sharmi rg
+static web app detail - name -ymadmin
+plan type - free
+deployment detail - github
+github account - sharmi127
+organisation - sharmi1a127
+respo - select repo
+branch - main
+
+build details
+
+Build Presets: React
+App location: /
+Api location:
+Output location: dist
+
+review+ create
